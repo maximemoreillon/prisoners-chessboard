@@ -16,4 +16,5 @@ export default defineConfig({
   build: {
     outDir: path.join(__dirname, "docs"),
   },
+  base: "",
 });
