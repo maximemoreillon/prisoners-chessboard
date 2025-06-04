@@ -84,6 +84,9 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
 </template>
 
 <style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
 .wrapper {
   display: flex;
   flex-direction: column;
