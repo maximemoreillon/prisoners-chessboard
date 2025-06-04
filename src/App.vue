@@ -39,9 +39,15 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
 <template>
   <div class="wrapper">
     <div>
-      <div class="index" style="text-align: left">0</div>
+      <div class="index">
+        <div>0</div>
+        <div>4</div>
+      </div>
       <Chessboard :cells="cells" :target="coordinateDecimal" />
-      <div class="index" style="text-align: right">15</div>
+      <div class="index">
+        <div>12</div>
+        <div>15</div>
+      </div>
     </div>
 
     <table>
@@ -109,6 +115,8 @@ table {
 .index {
   opacity: 0.5;
   font-size: 80%;
+  display: flex;
+  justify-content: space-between;
 }
 
 .coordinate {

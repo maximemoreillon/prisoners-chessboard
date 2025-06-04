@@ -33,6 +33,7 @@ const classOfCell = (cellIndex: number) => ({
 
 <style scoped>
 .chessboard {
+  margin: 0.25em;
   border: 1px solid black;
   display: grid;
   grid-template-columns: repeat(4, auto);
