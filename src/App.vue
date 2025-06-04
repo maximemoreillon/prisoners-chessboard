@@ -2,37 +2,35 @@
 import { computed, ref } from "vue";
 import Chessboard from "./components/Chessboard.vue";
 
-const cells = ref(Array.from({ length: 16 }, () => Math.random() >= 0.5));
-const groupings = ref([
-  {
-    color: "lightsalmon",
-    condition: (i: number) => i >= 0.5 * cells.value.length,
-  },
-  {
-    color: "lightpink",
-    condition: (i: number) =>
-      Math.floor((2 * i) / Math.sqrt(cells.value.length)) % 2 !== 0,
-  },
-  {
-    color: "lightgreen",
-    condition: (i: number) =>
-      Math.floor(i / Math.sqrt(cells.value.length)) % 2 !== 0,
-  },
-  {
-    color: "lightblue",
-    condition: (i: number) =>
-      Math.floor((4 * i) / Math.sqrt(cells.value.length)) % 2 !== 0,
-  },
-]);
+const boardSize = ref<16 | 64>(16);
+
+const cells = ref(
+  Array.from({ length: boardSize.value }, () => Math.random() >= 0.5)
+);
+
+const colors = [
+  "lightpink",
+  "lightblue",
+  "lightgreen",
+  "lightsalmon",
+  "aquamarine",
+  "lightgrey",
+];
+
+const conditions = ref(
+  Array.from(
+    { length: boardSize.value.toString(2).length - 1 },
+    (_, ci) => (i: number) => i.toString(2).at(-ci - 1) === "1"
+  )
+);
 
 const parities = computed(() =>
-  groupings.value.map(({ condition }) =>
+  conditions.value.map((condition) =>
     cells.value.reduce((acc, cell, i) => acc != (cell && condition(i)), true)
   )
 );
 
 const coordinateBinary = computed(() => parities.value.map((v) => +v).join(""));
-
 const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
 </script>
 
@@ -41,12 +39,16 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
     <div>
       <div class="index">
         <div>0</div>
-        <div>4</div>
+        <div>{{ Math.sqrt(boardSize) }}</div>
       </div>
-      <Chessboard :cells="cells" :target="coordinateDecimal" />
+      <Chessboard
+        :cells="cells"
+        :target="coordinateDecimal"
+        :size="boardSize"
+      />
       <div class="index">
-        <div>12</div>
-        <div>15</div>
+        <div>{{ boardSize - 1 - Math.sqrt(boardSize) }}</div>
+        <div>{{ boardSize - 1 }}</div>
       </div>
     </div>
 
@@ -58,16 +60,18 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
         </tr>
       </thead>
       <tbody>
-        <tr v-for="({ condition, color }, ci) in groupings" :key="ci">
+        <tr v-for="(_, i) in conditions" :key="i">
           <td>
-            <Chessboard :cells="cells" :condition="condition" :color="color" />
+            <Chessboard
+              :cells="cells"
+              :condition="conditions[i]"
+              :color="colors[i]"
+              :size="boardSize"
+            />
           </td>
           <td>
-            <span
-              class="coordinate"
-              :style="{ 'background-color': groupings[ci].color }"
-            >
-              {{ +parities[ci] }}
+            <span class="coordinate" :style="{ 'background-color': colors[i] }">
+              {{ +parities[i] }}
             </span>
           </td>
         </tr>
@@ -80,7 +84,7 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
         :key="i"
         class="coordinate"
         :style="{
-          backgroundColor: groupings[i].color,
+          backgroundColor: colors[i],
           paddingInline: '0.25em',
         }"
       >

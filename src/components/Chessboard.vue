@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
+  size: number;
   cells: Boolean[];
   condition?: Function;
   color?: string;
@@ -19,7 +20,10 @@ const classOfCell = (cellIndex: number) => ({
 </script>
 
 <template>
-  <div class="chessboard">
+  <div
+    class="chessboard"
+    :style="{ gridTemplateColumns: `repeat(${Math.sqrt(props.size)}, auto)` }"
+  >
     <div
       v-for="(_, i) in props.cells"
       :key="i"
@@ -36,7 +40,6 @@ const classOfCell = (cellIndex: number) => ({
   margin: 0.25em;
   border: 1px solid black;
   display: grid;
-  grid-template-columns: repeat(4, auto);
 }
 
 .chessboard > div {
