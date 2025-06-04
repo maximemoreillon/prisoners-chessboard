@@ -5,6 +5,8 @@ const props = defineProps<{
   condition?: Function;
   color?: string;
   target?: number;
+  current?: number;
+  toFlip?: number;
 }>();
 
 const styleOfCell = (cellIndex: number) => ({
@@ -16,6 +18,8 @@ const styleOfCell = (cellIndex: number) => ({
 
 const classOfCell = (cellIndex: number) => ({
   target: cellIndex === props.target,
+  current: cellIndex === props.current,
+  toFlip: cellIndex === props.toFlip && props.toFlip,
 });
 </script>
 
@@ -51,13 +55,5 @@ const classOfCell = (cellIndex: number) => ({
 input[type="checkbox"] {
   width: 1.5em;
   height: 1.5em;
-}
-
-.green {
-  background-color: lightgreen;
-}
-
-.red {
-  background-color: lightpink;
 }
 </style>
