@@ -19,7 +19,7 @@ const groupings = ref([
       Math.floor((2 * i) / Math.sqrt(cells.value.length)) % 2 === 0,
   },
   {
-    color: "coral",
+    color: "lightsalmon",
     condition: (i: number) =>
       Math.floor((4 * i) / Math.sqrt(cells.value.length)) % 2 === 0,
   },
@@ -27,9 +27,7 @@ const groupings = ref([
 
 const parities = computed(() =>
   groupings.value.map(({ condition }) =>
-    cells.value.reduce((acc, cell, i) => {
-      return acc != (cell && condition(i));
-    }, true)
+    cells.value.reduce((acc, cell, i) => acc != (cell && condition(i)), true)
   )
 );
 
@@ -40,7 +38,11 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
 
 <template>
   <div class="wrapper">
-    <Chessboard :cells="cells" :target="coordinateDecimal" />
+    <div>
+      <div class="index" style="text-align: left">0</div>
+      <Chessboard :cells="cells" :target="coordinateDecimal" />
+      <div class="index" style="text-align: right">15</div>
+    </div>
 
     <table>
       <tr>
@@ -51,8 +53,13 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
         <td>
           <Chessboard :cells="cells" :condition="condition" :color="color" />
         </td>
-        <td :style="{ 'background-color': groupings[ci].color }">
-          {{ +parities[ci] }}
+        <td>
+          <span
+            class="coordinate"
+            :style="{ 'background-color': groupings[ci].color }"
+          >
+            {{ +parities[ci] }}
+          </span>
         </td>
       </tr>
     </table>
@@ -90,6 +97,11 @@ table {
 
 .target {
   outline: 2px solid red;
+}
+
+.index {
+  opacity: 0.5;
+  font-size: 80%;
 }
 
 .coordinate {
