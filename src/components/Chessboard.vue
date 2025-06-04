@@ -44,6 +44,11 @@ const classOfCell = (cellIndex: number) => ({
   justify-self: center;
 }
 
+input[type="checkbox"] {
+  width: 1.5em;
+  height: 1.5em;
+}
+
 .green {
   background-color: lightgreen;
 }
