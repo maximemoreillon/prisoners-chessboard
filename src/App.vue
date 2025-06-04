@@ -5,23 +5,23 @@ import Chessboard from "./components/Chessboard.vue";
 const cells = ref(Array.from({ length: 16 }, () => Math.random() >= 0.5));
 const groupings = ref([
   {
-    color: "lightpink",
+    color: "lightsalmon",
     condition: (i: number) => i >= 0.5 * cells.value.length,
+  },
+  {
+    color: "lightpink",
+    condition: (i: number) =>
+      Math.floor((2 * i) / Math.sqrt(cells.value.length)) % 2 !== 0,
   },
   {
     color: "lightgreen",
     condition: (i: number) =>
-      Math.floor(i / Math.sqrt(cells.value.length)) % 2 === 0,
+      Math.floor(i / Math.sqrt(cells.value.length)) % 2 !== 0,
   },
   {
     color: "lightblue",
     condition: (i: number) =>
-      Math.floor((2 * i) / Math.sqrt(cells.value.length)) % 2 === 0,
-  },
-  {
-    color: "lightsalmon",
-    condition: (i: number) =>
-      Math.floor((4 * i) / Math.sqrt(cells.value.length)) % 2 === 0,
+      Math.floor((4 * i) / Math.sqrt(cells.value.length)) % 2 !== 0,
   },
 ]);
 
@@ -45,23 +45,27 @@ const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
     </div>
 
     <table>
-      <tr>
-        <th>Grouping</th>
-        <th>Parity</th>
-      </tr>
-      <tr v-for="({ condition, color }, ci) in groupings" :key="ci">
-        <td>
-          <Chessboard :cells="cells" :condition="condition" :color="color" />
-        </td>
-        <td>
-          <span
-            class="coordinate"
-            :style="{ 'background-color': groupings[ci].color }"
-          >
-            {{ +parities[ci] }}
-          </span>
-        </td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Grouping</th>
+          <th>Parity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="({ condition, color }, ci) in groupings" :key="ci">
+          <td>
+            <Chessboard :cells="cells" :condition="condition" :color="color" />
+          </td>
+          <td>
+            <span
+              class="coordinate"
+              :style="{ 'background-color': groupings[ci].color }"
+            >
+              {{ +parities[ci] }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
     </table>
 
     <div>
