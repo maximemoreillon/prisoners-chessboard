@@ -1,41 +1,34 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import Chessboard from "./components/Chessboard.vue";
+import colors from "@/colors";
+import BinaryString from "./components/BinaryString.vue";
 
 function generateCells(length: number) {
   return Array.from({ length }, () => Math.random() >= 0.5);
 }
-const cells = ref(generateCells(16));
-
-const boardSize = computed(() => cells.value.length);
 
 function changeBoardSize() {
   if (boardSize.value === 16) cells.value = generateCells(64);
   else cells.value = generateCells(16);
 }
 
+const cells = ref(generateCells(16));
+
+const boardSize = computed(() => cells.value.length);
 const groupingsCount = computed(() => boardSize.value.toString(2).length - 1);
+const target = computed(() => Math.round(Math.random() * boardSize.value));
 
-const target = ref(Math.round(Math.random() * boardSize.value));
-
-const colors = [
-  "lightpink",
-  "lightblue",
-  "lightgreen",
-  "lightsalmon",
-  "aquamarine",
-  "lightgrey",
-];
-
-const conditions = computed(() =>
+const groupingConditions = computed(() =>
   Array.from(
     { length: groupingsCount.value },
     (_, ci) => (i: number) => i.toString(2).at(-ci - 1) === "1"
   )
 );
 
+// Parities for each grouping
 const parities = computed(() =>
-  conditions.value.map((condition) =>
+  groupingConditions.value.map((condition) =>
     cells.value.reduce((acc, cell, i) => acc != (cell && condition(i)), true)
   )
 );
@@ -47,31 +40,24 @@ const paritiesBinary = computed(() =>
     .padStart(groupingsCount.value, "0")
 );
 
-const coordinateBinary = computed(() =>
-  parities.value
-    .map((v) => +v)
-    .join("")
-    .padStart(groupingsCount.value, "0")
-);
-const coordinateDecimal = computed(() => parseInt(coordinateBinary.value, 2));
+function bin2Dec(bin: string) {
+  return parseInt(bin, 2);
+}
 
-const targetBinary = computed(() =>
-  target.value.toString(2).padStart(groupingsCount.value, "0")
-);
-const difference = computed(() => target.value ^ coordinateDecimal.value);
+function dec2Bin(dec: number) {
+  return dec.toString(2).padStart(groupingsCount.value, "0");
+}
 
-const differenceBinary = computed(() =>
-  difference.value.toString(2).padStart(groupingsCount.value, "0")
-);
+const paritiesDecimal = computed(() => bin2Dec(paritiesBinary.value));
+const difference = computed(() => target.value ^ paritiesDecimal.value);
 
-// Does not work
 const coinToFlip = computed(() => {
-  const matchedConditions = conditions.value.filter(
-    (_, i) => differenceBinary.value[i] === "1"
+  const matchedConditions = groupingConditions.value.filter(
+    (_, i) => dec2Bin(difference.value)[i] === "1"
   );
 
-  return cells.value.findIndex(
-    (_, ci) => !matchedConditions.some((mc) => !mc(ci))
+  return cells.value.findIndex((_, ci) =>
+    matchedConditions.every((mc) => mc(ci))
   );
 });
 </script>
@@ -90,7 +76,7 @@ const coinToFlip = computed(() => {
         :cells="cells"
         :target="target"
         :toFlip="coinToFlip"
-        :current="coordinateDecimal"
+        :current="paritiesDecimal"
         :size="boardSize"
       />
       <div class="index">
@@ -99,7 +85,7 @@ const coinToFlip = computed(() => {
       </div>
     </div>
 
-    <table>
+    <table class="groupings">
       <thead>
         <tr>
           <th>Grouping</th>
@@ -107,11 +93,11 @@ const coinToFlip = computed(() => {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(_, i) in conditions" :key="i">
+        <tr v-for="(_, i) in groupingConditions" :key="i">
           <td>
             <Chessboard
               :cells="cells"
-              :condition="conditions[i]"
+              :condition="groupingConditions[i]"
               :color="colors[i]"
               :size="boardSize"
             />
@@ -125,61 +111,59 @@ const coinToFlip = computed(() => {
       </tbody>
     </table>
 
-    <div>
-      <h2>Current</h2>
-      <span
-        v-for="(parity, i) in paritiesBinary"
-        :key="i"
-        class="coordinate"
-        :style="{
-          backgroundColor: colors[i],
-          paddingInline: '0.25em',
-        }"
-      >
-        {{ parity }}
-      </span>
+    <table class="calculations">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Binary</th>
+          <th>Decimal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Parities</td>
+          <td>
+            <BinaryString :binaryString="paritiesBinary" colored />
+          </td>
+          <td>
+            <span class="current coordinate">
+              {{ paritiesDecimal }}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>Target</td>
+          <td>
+            <BinaryString :binaryString="dec2Bin(target)" />
+          </td>
+          <td>
+            <span class="target coordinate">
+              {{ target }}
+            </span>
+          </td>
+        </tr>
 
-      <span> → </span>
-      <span class="current coordinate">{{ coordinateDecimal }}</span>
-    </div>
-    <div>
-      <h2>Target</h2>
-      <span
-        v-for="(bit, i) in targetBinary"
-        :key="i"
-        class="coordinate"
-        :style="{
-          backgroundColor: colors[i],
-          paddingInline: '0.25em',
-        }"
-      >
-        {{ bit }}
-      </span>
+        <tr>
+          <td>XOR</td>
+          <td>
+            <BinaryString :binaryString="dec2Bin(difference)" colored />
+          </td>
+          <td></td>
+        </tr>
 
-      <span> ← </span>
-      <span class="target coordinate">{{ target }}</span>
-    </div>
-
-    <div>
-      <h2>Difference</h2>
-      <span
-        v-for="(bit, i) in differenceBinary"
-        :key="i"
-        class="coordinate"
-        :style="{
-          backgroundColor: colors[i],
-          paddingInline: '0.25em',
-        }"
-      >
-        {{ +bit }}
-      </span>
-    </div>
-    <div>
-      <h2>Coin to flip</h2>
-      <div style="text-align: center">
-        <span class="toFlip coordinate">{{ coinToFlip }}</span>
-      </div>
-    </div>
+        <tr>
+          <td>To flip</td>
+          <td>
+            <BinaryString :binaryString="dec2Bin(coinToFlip)" />
+          </td>
+          <td>
+            <span class="toFlip coordinate">
+              {{ coinToFlip }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -197,6 +181,11 @@ body {
 
 table {
   text-align: center;
+  border-collapse: collapse;
+}
+
+.calculations td {
+  padding: 0.5em;
 }
 
 .coordinate {
@@ -204,15 +193,15 @@ table {
 }
 
 .current {
-  outline: 2px dashed red;
+  outline: 1px dashed red;
 }
 
 .toFlip {
-  outline: 2px dotted blue;
+  outline: 1px solid blue;
 }
 
 .target {
-  outline: 2px solid red;
+  outline: 2px solid green;
 }
 
 .index {
