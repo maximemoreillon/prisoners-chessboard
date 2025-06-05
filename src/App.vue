@@ -193,15 +193,15 @@ table {
 }
 
 .current {
-  outline: 1px dashed red;
+  outline: 2px dashed red;
 }
 
 .toFlip {
-  outline: 1px solid blue;
+  outline: 2px solid green;
 }
 
 .target {
-  outline: 2px solid green;
+  outline: 2px solid red;
 }
 
 .index {
